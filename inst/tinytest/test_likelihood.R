@@ -18,4 +18,9 @@ input
 model_formula = y ~ log(..) + sequence + rep + (1|precursor_scan) + (1|charge_in_scan)
 
 design_matrices_test = parse_formula(model_formula, input)
-design_matrices_test
+x = IsoAPQModelDesign(model_formula, design_matrices_test)
+response = 12 + runif(nrow(getIsoFixedDesign(x)))
+
+model_design = x
+model_test = get_iso_full_nonlinear_loglikelihood(model_design, response)
+model_test(params)

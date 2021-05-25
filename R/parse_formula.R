@@ -4,7 +4,8 @@ setClass("IsoAPQModelDesign",
                    fixed = "matrixOrNull",
                    random = "matrixOrNull",
                    counts = "integer",
-                   formula = "formula"))
+                   formula = "formula",
+                   independent_unit = "character"))
 
 IsoAPQModelDesign = function(model_formula, model_design_list = NULL,
                              model_data = NULL) {
@@ -12,16 +13,14 @@ IsoAPQModelDesign = function(model_formula, model_design_list = NULL,
         model_design_list = parse_formula(model_formula, model_data)
     } else {
         new("IsoAPQModelDesign",
-            protein = model_design_list[[1]],
-            fixed = model_design_list[[2]],
-            random = model_design_list[[3]],
-            counts = model_design_list[[4]],
-            formula = model_formula)
+            protein = model_design_list[["protein"]],
+            fixed = model_design_list[["fixed"]],
+            random = model_design_list[["random"]],
+            counts = model_design_list[["counts"]],
+            formula = model_formula,
+            independent_unit = model_design_list[["independent_unit"]])
     }
 }
-
-
-setMethod("initialize")
 
 setGeneric("getIsoProteinDesign", function(x) standardGeneric("getIsoProteinDesign"))
 setMethod("getIsoProteinDesign", "IsoAPQModelDesign", function(x) x@protein)
@@ -30,11 +29,19 @@ setMethod("getIsoFixedDesign", "IsoAPQModelDesign", function(x) x@fixed)
 setGeneric("getIsoRandomDesign", function(x) standardGeneric("getIsoRandomDesign"))
 setMethod("getIsoRandomDesign", "IsoAPQModelDesign", function(x) x@random)
 setGeneric("getIsoEffectsCounts", function(x) standardGeneric("getIsoEffectsCounts"))
-setMethod("getIsoEffectsCounts", "IsoAPQModelDesign", function(x) x@count)
+setMethod("getIsoEffectsCounts", "IsoAPQModelDesign", function(x) x@counts)
+setGeneric("getIsoIndependentUnit", function(x) standardGeneric("getIsoIndependentUnit"))
+setMethod("getIsoIndependentUnit", "IsoAPQModelDesign", function(x) x@independent_unit)
 setGeneric("hasIsoFixedEffects", function(x) standardGeneric("hasIsoFixedEffects"))
 setMethod("hasIsoFixedEffects", "IsoAPQModelDesign", function(x) !is.null(x@fixed))
 setGeneric("hasIsoRandomEffects", function(x) standardGeneric("hasIsoRandomEffects"))
 setMethod("hasIsoRandomEffects", "IsoAPQModelDesign", function(x) !is.null(x@random))
+setGeneric("getIsoFormula", function(x) standardGeneric("getIsoFormula"))
+setMethod("getIsoFormula", "IsoAPQModelDesign", function(x) x@formula)
+setGeneric("isIsoLinear", function(x) standardGeneric("isIsoLinear"))
+setMethod("isIsoLinear", "IsoAPQModelDesign",
+          function(x) grepl("log(..)", as.character(getIsoFormula(x))[3],
+                            fixed = TRUE))
 
 
 
@@ -78,6 +85,7 @@ get_design_matrices = function(candidate_formula, has_random,
     design_matrices = add_protein_design(design_matrices, model_data)
     design_matrices = add_effect_counts(design_matrices, candidate_formula,
                                         model_data)
+    design_matrices = add_independent_unit(design_matrices, model_data)
     design_matrices
 }
 
@@ -123,7 +131,7 @@ get_protein_matrix = function(model_data) {
     protein_cols = setdiff(colnames(model_data),
                            c("intensity", "y", "isoDistr", "iso_prob",
                              "precursor_scan", "charge_in_scan", "charge",
-                             "rep", "sequence"))
+                             "rep", "sequence", "iso_id"))
     protein_formula = paste("y ~ 0 +", paste(protein_cols, collapse = " + "))
     model.matrix(as.formula(protein_formula), data = model_data)
 }
@@ -150,5 +158,17 @@ add_effect_counts = function(design_matrices, candidate_formula, model_data) {
         random_effects_counts = integer()
     }
     design_matrices[["counts"]] = random_effects_counts
+    design_matrices
+}
+
+
+add_independent_unit = function(design_matrices, model_data) {
+    # TODO: make it general?
+    if (is.null(design_matrices[["random"]])) {
+        unit = character(0)
+    } else {
+        unit = as.character(model_data[["precursor_scan"]])
+    }
+    design_matrices[["independent_unit"]] = unit
     design_matrices
 }

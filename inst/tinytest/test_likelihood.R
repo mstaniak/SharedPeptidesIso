@@ -1,5 +1,6 @@
 input = data.table::as.data.table(expand.grid(
     iso_prob = 1,
+    isoDistr = 1,
     sequence = letters[1:3],
     rep = paste0("r", 1:2),
     precursor_scan = 1:2,
@@ -15,12 +16,12 @@ input[, protein_1 := as.integer(sequence %in% c("a", "b"))]
 input[, protein_2 := as.integer(sequence %in% c("c", "b"))]
 input
 
-model_formula = y ~ log(..) + sequence + rep + (1|precursor_scan) + (1|charge_in_scan)
+model_formula = intensity ~ log(..) + sequence + rep + (1|precursor_scan) + (1|charge_in_scan)
 
-design_matrices_test = parse_formula(model_formula, input)
+design_matrices_test = parse_formula(model_formula, model_data = input)
 x = IsoAPQModelDesign(model_formula, design_matrices_test)
-response = 12 + runif(nrow(getIsoFixedDesign(x)))
 
-model_design = x
-model_test = get_iso_full_nonlinear_loglikelihood(model_design, response)
+model_test = get_iso_full_nonlinear_loglikelihood(x)
+params = c(0.1, rep(0.5, getIsoNumRandom(x)), rep(13, getIsoNumProteins(x)),
+           rep(1, getIsoNumFixed(x)))
 model_test(params)

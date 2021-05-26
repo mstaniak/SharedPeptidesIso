@@ -9,7 +9,7 @@ fit_iso_full_model = function(model_design, ...) {
     num_random_effects = getIsoNumRandom(model_design)
     num_fixed_effects = getIsoNumFixed(model_design)
     num_proteins = getIsoNumProteins(model_design)
-    starting_values = c(0.1, rep(0.5, num_random_effects),
+    starting_values = c(0.1, rep(-0.5, num_random_effects),
                         rep(12, num_proteins),
                         rep(1, num_fixed_effects))
     # TODO: getIsoStartingValues

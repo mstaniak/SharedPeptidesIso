@@ -14,6 +14,51 @@ knitr::opts_chunk$set(
 )
 ```
 
+# Data
+
 ```{r setup}
 library(SharedPeptidesIso)
+data("mouse_cluster")
+knitr::kable(mouse_cluster)
+```
+
+# Nonlinear model
+
+```{r }
+model_full = IsoAPQModel(
+  log(intensity/isoDistr) ~ log(..) + (1|precursor_scan) + (1|charge_in_scan) +
+    sequence + rep,
+  mouse_cluster
+)
+```
+
+Coefficients:
+
+```{r }
+round(coef(model_full), 3)
+```
+
+Protein abundances:
+
+```{r }
+getIsoProteinAbundances(model_full)
+```
+
+Compare with linear model based on unique peptides:
+
+
+```{r }
+data("mouse_cluster_unique")
+head(mouse_cluster_unique)
+model_lin = lme4::lmer(
+  log(intensity/isoDistr) ~ 0 + P35278 + P61021 + Q9CQD1 +
+    (1|precursor_scan) + (1|charge_in_scan) +
+    sequence + rep,
+  data = mouse_cluster_unique
+)
+```
+
+```{r }
+fixed_coefs = lme4::fixef(model_lin)
+fixed_coefs[1:3]
 ```

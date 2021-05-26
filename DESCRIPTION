@@ -11,5 +11,7 @@ Encoding: UTF-8
 LazyData: true
 Imports: 
     tinytest,
-    lme4
+    lme4,
+    stats,
+    numDeriv
 Suggests: tinytest

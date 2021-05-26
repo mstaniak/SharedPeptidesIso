@@ -1,13 +1,8 @@
-get_iso_full_loglikelihood = function(x) {
-    if (isIsoLinear(x)) {
-        stop("Not implemented yet")
-        # get_iso_full_linear_loglikelihood(x)
-    } else {
-        get_iso_full_nonlinear_loglikelihood(x)
-    }
-}
-
-get_iso_full_nonlinear_loglikelihood = function(model_design) {
+#' Negative log-likelihood for a full model based on IsoAPQModelDesign object
+#' @param model_design object of class IsoAPQModelDesign
+#' @param function of a single parameter
+#' @keywords internal
+get_iso_full_loglikelihood = function(model_design) {
     response = getIsoResponse(model_design)
     random_effects_counts = getIsoEffectsCounts(model_design)
     num_random_effects = getIsoNumRandom(model_design)
@@ -25,50 +20,10 @@ get_iso_full_nonlinear_loglikelihood = function(model_design) {
     neg_loglik
 }
 
-# get_iso_random_loglikelihood = function(x) {
-#     if (isIsoLinear(x)) {
-#         get_iso_random_linear_model(x)
-#     } else {
-#         get_iso_random_nonlinear_model(x)
-#     }
-# }
-#
-# get_iso_fixed_loglikelihood = function(x) {
-#     if (isIsoLinear(x)) {
-#         get_iso_fixed_linear_loglikelihood(x)
-#     } else {
-#         get_iso_fixed_nonlinear_loglikelihood(x)
-#     }
-# }
-#
-# get_iso_protein_loglikelihood = function(x) {
-#     if (isIsoLinear(x)) {
-#         get_iso_protein_linear_loglikelihood(x)
-#     } else {
-#         get_iso_protein_nonlinear_loglikelihood(x)
-#     }
-# }
-
-
-# FULL MODEL
-get_neglog_full_unit = function(random_design, proteins_design, fixed_design,
-                                response, num_random_effects, num_fixed_effects,
-                                num_proteins, num_rows, random_effects_counts) {
-    function(params) {
-        sigma = exp(params[1])
-        random_parameters = params[2:(num_random_effects + 1)]
-        proteins = params[(num_random_effects + 2):(num_random_effects + 2 + num_proteins - 1)]
-        fixed = params[(num_random_effects + 2 + num_proteins):length(params)]
-        random_diagonal = rep(random_parameters, times = random_effects_counts)
-
-        V = diag(1, num_rows) + random_design %*% diag(random_diagonal) %*% t(random_design)
-        V_inv = solve(V)
-        r = (response - log(proteins_design %*% exp(proteins)) - fixed_design %*% fixed)
-
-        as.numeric(log(det((sigma ^ 2) * V)) + (1 / (sigma ^ 2)) * t(r) %*% V_inv %*% r)
-    }
-}
-
+#' Negative log-likelihood for a full model
+#' @inheritParams get_gradient_full
+#' @return function of a single parameter that returns negative log-likelihood
+#' @keywords internal
 get_neglog_full = function(random_design, proteins_design, fixed_design,
                            response, num_random_effects, num_fixed_effects,
                            num_proteins, random_effects_counts,
@@ -97,3 +52,38 @@ get_neglog_full = function(random_design, proteins_design, fixed_design,
         loglik_value
     }
 }
+
+
+#' Negative log-likelihood within a single independent unit
+#' @inheritParams get_gradient_full
+#' @param num_rows number of observations
+#' @return function a single parameter
+#' @keywords internal
+get_neglog_full_unit = function(random_design, proteins_design, fixed_design,
+                                response, num_random_effects, num_fixed_effects,
+                                num_proteins, num_rows, random_effects_counts) {
+    function(params) {
+        sigma = exp(params[1])
+        random_parameters = params[2:(num_random_effects + 1)]
+        proteins = params[(num_random_effects + 2):(num_random_effects + 2 + num_proteins - 1)]
+        fixed = params[(num_random_effects + 2 + num_proteins):length(params)]
+        random_diagonal = rep(random_parameters, times = random_effects_counts)
+
+        V = diag(1, num_rows) + random_design %*% diag(random_diagonal) %*% t(random_design)
+        V_inv = solve(V)
+        r = (response - log(proteins_design %*% exp(proteins)) - fixed_design %*% fixed)
+
+        as.numeric(log(det((sigma ^ 2) * V)) + (1 / (sigma ^ 2)) * t(r) %*% V_inv %*% r)
+    }
+}
+
+
+# TODO:
+# get_iso_random_loglikelihood = function(x) {
+# }
+#
+# get_iso_fixed_loglikelihood = function(x) {
+# }
+#
+# get_iso_protein_loglikelihood = function(x) {
+# }

@@ -1,3 +1,7 @@
+#' Fit a model based on model design
+#' @param model_design object of class IsoAPQModelDesign
+#' @return list
+#' @keywords internal
 fit_iso_full_model = function(model_design) {
     grad_m = getIsoAnalyticalGradient(model_design)
     loglik_m = getIsoLogLikelihood(model_design)
@@ -13,6 +17,11 @@ fit_iso_full_model = function(model_design) {
 }
 
 
+#' Extract model information from optim() output and model design
+#' @param fitted_model output of optim()
+#' @param model_design object of class IsoAPQModelDesign
+#' @return list
+#' @keywords internal
 get_full_model_information = function(fitted_model, model_design) {
     response = getIsoResponse(model_design)
     num_fixed = getIsoNumFixed(model_design)
@@ -58,6 +67,11 @@ get_full_model_information = function(fitted_model, model_design) {
 }
 
 
+#' Get hessian based on model design and parameters
+#' @param model_design object of class IsoAPQModelDesign
+#' @param pars numeric
+#' @return matrix
+#' @keywords internal
 get_hessian = function(model_design, pars) {
     grad_m = getIsoAnalyticalGradient(model_design)
     hessian_num = numDeriv::jacobian(grad_m, pars)

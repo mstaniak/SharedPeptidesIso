@@ -1,13 +1,7 @@
-get_iso_full_gradient = function(x) {
-    if (isIsoLinear(x)) {
-        # get_iso_full_linear_loglikelihood(x, response)
-        stop("Not implemented yet")
-    } else {
-        get_iso_full_nonlinear_gradient(x)
-    }
-}
-
-get_iso_full_nonlinear_gradient = function(model_design) {
+#' Analytical gradient for the full model
+#' @param model_design object of class IsoAPQModelDesign
+#' @keywords internal
+get_iso_full_gradient = function(model_design) {
     response = getIsoResponse(model_design)
     random_effects_counts = getIsoEffectsCounts(model_design)
     num_random_effects = getIsoNumRandom(model_design)
@@ -25,41 +19,17 @@ get_iso_full_nonlinear_gradient = function(model_design) {
     gradient
 }
 
-# get_iso_random_gradient = function(x) {
-#     if (isIsoLinear(x)) {
-#         get_iso_random_linear_model(x)
-#     } else {
-#         get_iso_random_nonlinear_model(x)
-#     }
-# }
-#
-# get_iso_fixed_loglikelihood = function(x) {
-#     if (isIsoLinear(x)) {
-#         get_iso_fixed_linear_loglikelihood(x)
-#     } else {
-#         get_iso_fixed_nonlinear_loglikelihood(x)
-#     }
-# }
-#
-# get_iso_protein_loglikelihood = function(x) {
-#     if (isIsoLinear(x)) {
-#         get_iso_protein_linear_loglikelihood(x)
-#     } else {
-#         get_iso_protein_nonlinear_loglikelihood(x)
-#     }
-# }
-
 
 #' Nonlinear mixed effects model based on isotopic distribution
-#' @param
-#' @param
-#' @param
-#' @param
-#' @param
-#' @param
-#' @param
-#' @param
-#' @param
+#' @param random_design design matrix for random effects
+#' @param proteins_design design matrix for protein parameters
+#' @param fixed_design design matrix for fixed effects
+#' @param response response vector
+#' @param num_random_effects number of random effects
+#' @param num_fixed_effects number of fixed effects
+#' @param num_proteins number of proteins
+#' @param random_effects_counts counts of groups for each random effect
+#' @param independent_unit vector of values of the independent unit
 #' @return function of a single parameter that returns vector of gradient values
 #' @keywords internal
 get_gradient_full = function(random_design, proteins_design, fixed_design,
@@ -96,6 +66,11 @@ get_gradient_full = function(random_design, proteins_design, fixed_design,
 }
 
 
+#' Analytical gradient within a single independent unit
+#' @inheritParams get_gradient_full
+#' @param num_rows number of observations
+#' @return function of a single parameter that returns analytical gradient
+#' @keywords internal
 get_gradient_full_unit = function(random_design, proteins_design, fixed_design,
                                   response, num_random_effects, num_fixed_effects,
                                   num_proteins, num_rows, random_effects_counts) {
@@ -140,3 +115,14 @@ get_gradient_full_unit = function(random_design, proteins_design, fixed_design,
         c(sigma * grad_sigma, grad_theta, grad_prot, fixed_gradient)
     }
 }
+
+
+# TODO:
+# get_iso_random_gradient = function(x) {
+# }
+#
+# get_iso_fixed_loglikelihood = function(x) {
+# }
+#
+# get_iso_protein_loglikelihood = function(x) {
+# }

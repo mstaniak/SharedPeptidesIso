@@ -1,3 +1,7 @@
+#' Get design matrices and response from formula and input data
+#' @param model_formula formula
+#' @param model_data data.table
+#' @return list
 #' @keywords internal
 parse_formula = function(model_formula, model_data) {
     formula_chr = as.character(model_formula)
@@ -9,6 +13,9 @@ parse_formula = function(model_formula, model_data) {
     design_matrices
 }
 
+
+#' Get updated formula for use in lmer
+#' @param formula_chr as.character(formula)
 #' @keywords internal
 get_candidate_formula = function(formula_chr) {
     if (grepl("log", formula_chr[3])) {
@@ -20,6 +27,12 @@ get_candidate_formula = function(formula_chr) {
     as.formula(formula_chr)
 }
 
+
+#' Get design matrices
+#' @param candidate_formula formula
+#' @param has_random if TRUE, there are random effects
+#' @param has_fixed, if TRUE, there are fixed effects
+#' @param model_data data.table
 #' @keywords internal
 get_design_matrices = function(candidate_formula, has_random,
                                has_fixed, model_data) {
@@ -41,6 +54,9 @@ get_design_matrices = function(candidate_formula, has_random,
     design_matrices
 }
 
+
+#' Design matrices for full model
+#' @inheritParams get_design_matrices
 #' @keywords internal
 get_full_design = function(candidate_formula, model_data) {
     lmer_model = lme4::lmer(candidate_formula, data = model_data)
@@ -50,12 +66,17 @@ get_full_design = function(candidate_formula, model_data) {
          random = as.matrix(random_design))
 }
 
+
+#' Design matrices for model with just proteins
+#' @inheritParams get_design_matrices
 #' @keywords internal
 get_empty_design = function(model_data) {
     list(fixed = NULL,
          random = NULL)
 }
 
+#' Get design matrices for model with no random effects
+#' @inheritParams get_design_matrices
 #' @keywords internal
 get_fixed_design = function(candidate_formula, model_data) {
     fixed_design = model.matrix(candidate_formula, data = model_dat)
@@ -63,6 +84,9 @@ get_fixed_design = function(candidate_formula, model_data) {
          random = NULL)
 }
 
+
+#' Get design matrices for model with no fixed effects
+#' @inheritParams get_design_matrices
 #' @keywords internal
 get_random_design = function(candidate_formula, model_data) {
     lmer_model = lme4::lmer(candidate_formula, data = model_data)
@@ -71,6 +95,10 @@ get_random_design = function(candidate_formula, model_data) {
          random = as.matrix(random_design))
 }
 
+
+#' Add design matrix for proteins
+#' @param design_matrices list of design matrices
+#' @inheritParams get_design_matrices
 #' @keywords internal
 add_protein_design = function(design_matrices, model_data) {
     protein_design = get_protein_matrix(model_data)
@@ -78,16 +106,24 @@ add_protein_design = function(design_matrices, model_data) {
     design_matrices
 }
 
+
+#' Create design matrix for proteins
+#' @inheritParams get_design_matrices
 #' @keywords internal
 get_protein_matrix = function(model_data) {
     protein_cols = setdiff(colnames(model_data),
                            c("intensity", "y", "isoDistr", "iso_prob",
                              "precursor_scan", "charge_in_scan", "charge",
                              "rep", "sequence", "iso_id"))
-    protein_formula = paste("intensity ~ 0 +", paste(protein_cols, collapse = " + "))
+    protein_formula = paste("intensity ~ 0 +",
+                            paste(protein_cols, collapse = " + "))
     model.matrix(as.formula(protein_formula), data = model_data)
 }
 
+
+#' Add counts of levels of random effects to list of design matrices
+#' @inheritParams add_protein_design
+#' @inheritParams get_design_matrices
 #' @keywords internal
 add_effect_counts = function(design_matrices, candidate_formula, model_data) {
     if (!is.null(design_matrices[["random"]])) {
@@ -113,6 +149,9 @@ add_effect_counts = function(design_matrices, candidate_formula, model_data) {
     design_matrices
 }
 
+
+#' Add vector with independent unit to list of design matrices
+#' @inheritParams add_protein_design
 #' @keywords internal
 add_independent_unit = function(design_matrices, model_data) {
     # TODO: make it general?
@@ -125,6 +164,10 @@ add_independent_unit = function(design_matrices, model_data) {
     design_matrices
 }
 
+
+#' Add response to list of design matrices
+#' @inheritParams add_protein_design
+#' @param model_formula formula
 #' @keywords internal
 add_response = function(design_matrices, model_formula, model_data) {
     response_chr = as.character(model_formula)[2]

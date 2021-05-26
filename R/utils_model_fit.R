@@ -33,9 +33,9 @@ get_full_model_information = function(fitted_model, model_design) {
     if (fitted_model[["convergence"]] == 0) {
         pars = fitted_model[["par"]]
         loglik = -fitted_model[["value"]]
-        coef = c(exp(pars[1]), pars[-1])
+        coef = c(exp(pars[1:(num_random + 1)]), pars[-(1:(num_random + 1))])
         sigma = coef[1]
-        random_effects_var = (sigma ^ 2) * coef[2:(num_random + 1)]
+        random_effects_var = (sigma ^ 2) * exp(coef[2:(num_random + 1)])
         names(random_effects_var) = names(getIsoEffectsCounts(model_design))
         protein_abundance = coef[(num_random + 2):(num_random + num_proteins + 1)]
         fixed_effects = coef[(num_random + num_proteins + 2):length(coef)]
@@ -47,15 +47,15 @@ get_full_model_information = function(fitted_model, model_design) {
         hessian = get_hessian(model_design, pars)
         conv_message = "model converged"
     } else {
-        coef = c(NA, num_fixed + num_random + num_proteins)
-        loglik = NA
-        sigma = NA
-        random_effects_var = rep(NA, num_random)
-        protein_abundance = rep(NA, num_proteins)
-        fixed_effects = rep(NA, num_fixed)
+        coef = c(NA_real_, num_fixed + num_random + num_proteins)
+        loglik = NA_real_
+        sigma = NA_real_
+        random_effects_var = rep(NA_real_, num_random)
+        protein_abundance = rep(NA_real_, num_proteins)
+        fixed_effects = rep(NA_real_, num_fixed)
 
-        fitted = rep(NA, getIsoNumObservations(model_design))
-        residuals = rep(NA, getIsoNumObservations(model_design))
+        fitted = rep(NA_real_, getIsoNumObservations(model_design))
+        residuals = rep(NA_real_, getIsoNumObservations(model_design))
         hessian = matrix()
         conv_message = "model did not converge"
     }

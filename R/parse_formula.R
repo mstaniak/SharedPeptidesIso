@@ -3,23 +3,33 @@ setClass("IsoAPQModelDesign",
          slots = c(protein = "matrixOrNull",
                    fixed = "matrixOrNull",
                    random = "matrixOrNull",
+                   response = "numeric",
                    counts = "integer",
                    formula = "formula",
-                   independent_unit = "character"))
+                   independent_unit = "character",
+                   num_proteins = "integer",
+                   num_random_effects = "integer",
+                   num_fixed_effects = "integer",
+                   num_observations = "integer")
+)
 
 IsoAPQModelDesign = function(model_formula, model_design_list = NULL,
                              model_data = NULL) {
     if (is.null(model_design_list)) {
         model_design_list = parse_formula(model_formula, model_data)
-    } else {
-        new("IsoAPQModelDesign",
-            protein = model_design_list[["protein"]],
-            fixed = model_design_list[["fixed"]],
-            random = model_design_list[["random"]],
-            counts = model_design_list[["counts"]],
-            formula = model_formula,
-            independent_unit = model_design_list[["independent_unit"]])
     }
+    new("IsoAPQModelDesign",
+        protein = model_design_list[["protein"]],
+        fixed = model_design_list[["fixed"]],
+        random = model_design_list[["random"]],
+        response = model_design_list[["response"]],
+        counts = model_design_list[["counts"]],
+        formula = model_formula,
+        independent_unit = model_design_list[["independent_unit"]],
+        num_proteins = ncol(model_design_list[["protein"]]),
+        num_random_effects = length(model_design_list[["counts"]]),
+        num_fixed_effects = ncol(model_design_list[["fixed"]]),
+        num_observations = nrow(model_design_list[["protein"]]))
 }
 
 setGeneric("getIsoProteinDesign", function(x) standardGeneric("getIsoProteinDesign"))
@@ -28,6 +38,8 @@ setGeneric("getIsoFixedDesign", function(x) standardGeneric("getIsoFixedDesign")
 setMethod("getIsoFixedDesign", "IsoAPQModelDesign", function(x) x@fixed)
 setGeneric("getIsoRandomDesign", function(x) standardGeneric("getIsoRandomDesign"))
 setMethod("getIsoRandomDesign", "IsoAPQModelDesign", function(x) x@random)
+setGeneric("getIsoResponse", function(x) standardGeneric("getIsoResponse"))
+setMethod("getIsoResponse", "IsoAPQModelDesign", function(x) x@response)
 setGeneric("getIsoEffectsCounts", function(x) standardGeneric("getIsoEffectsCounts"))
 setMethod("getIsoEffectsCounts", "IsoAPQModelDesign", function(x) x@counts)
 setGeneric("getIsoIndependentUnit", function(x) standardGeneric("getIsoIndependentUnit"))
@@ -38,15 +50,20 @@ setGeneric("hasIsoRandomEffects", function(x) standardGeneric("hasIsoRandomEffec
 setMethod("hasIsoRandomEffects", "IsoAPQModelDesign", function(x) !is.null(x@random))
 setGeneric("getIsoFormula", function(x) standardGeneric("getIsoFormula"))
 setMethod("getIsoFormula", "IsoAPQModelDesign", function(x) x@formula)
+setGeneric("getIsoNumRandom", function(x) standardGeneric("getIsoNumRandom"))
+setMethod("getIsoNumRandom", "IsoAPQModelDesign", function(x) x@num_random_effects)
+setGeneric("getIsoNumFixed", function(x) standardGeneric("getIsoNumFixed"))
+setMethod("getIsoNumFixed", "IsoAPQModelDesign", function(x) x@num_fixed_effects)
+setGeneric("getIsoNumProteins", function(x) standardGeneric("getIsoNumProteins"))
+setMethod("getIsoNumProteins", "IsoAPQModelDesign", function(x) x@num_proteins)
+setGeneric("getIsoNumObservations", function(x) standardGeneric("getIsoNumObservations"))
+setMethod("getIsoNumObservations", "IsoAPQModelDesign", function(x) x@num_observations)
 setGeneric("isIsoLinear", function(x) standardGeneric("isIsoLinear"))
 setMethod("isIsoLinear", "IsoAPQModelDesign",
-          function(x) grepl("log(..)", as.character(getIsoFormula(x))[3],
-                            fixed = TRUE))
-
-
-
+          function(x) !grepl("log(..)", as.character(getIsoFormula(x))[3],
+                             fixed = TRUE))
 # setGeneric("getIsoDesignSummary", function(x) standardGeneric("getIsoProteinDesign"))
-
+# TODO: ^
 
 #' @keywords internal
 parse_formula = function(model_formula, model_data) {
@@ -86,6 +103,8 @@ get_design_matrices = function(candidate_formula, has_random,
     design_matrices = add_effect_counts(design_matrices, candidate_formula,
                                         model_data)
     design_matrices = add_independent_unit(design_matrices, model_data)
+    design_matrices = add_response(design_matrices, candidate_formula,
+                                   model_data)
     design_matrices
 }
 
@@ -132,7 +151,7 @@ get_protein_matrix = function(model_data) {
                            c("intensity", "y", "isoDistr", "iso_prob",
                              "precursor_scan", "charge_in_scan", "charge",
                              "rep", "sequence", "iso_id"))
-    protein_formula = paste("y ~ 0 +", paste(protein_cols, collapse = " + "))
+    protein_formula = paste("intensity ~ 0 +", paste(protein_cols, collapse = " + "))
     model.matrix(as.formula(protein_formula), data = model_data)
 }
 
@@ -161,7 +180,7 @@ add_effect_counts = function(design_matrices, candidate_formula, model_data) {
     design_matrices
 }
 
-
+#' @keywords internal
 add_independent_unit = function(design_matrices, model_data) {
     # TODO: make it general?
     if (is.null(design_matrices[["random"]])) {
@@ -170,5 +189,13 @@ add_independent_unit = function(design_matrices, model_data) {
         unit = as.character(model_data[["precursor_scan"]])
     }
     design_matrices[["independent_unit"]] = unit
+    design_matrices
+}
+
+#' @keywords internal
+add_response = function(design_matrices, model_formula, model_data) {
+    response_chr = as.character(model_formula)[2]
+    response = eval(str2expression(response_chr), envir = model_data)
+    design_matrices[["response"]] = response
     design_matrices
 }

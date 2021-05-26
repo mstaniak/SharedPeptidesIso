@@ -124,6 +124,7 @@ get_protein_matrix = function(model_data) {
 #' Add counts of levels of random effects to list of design matrices
 #' @inheritParams add_protein_design
 #' @inheritParams get_design_matrices
+#' @import data.table
 #' @keywords internal
 add_effect_counts = function(design_matrices, candidate_formula, model_data) {
     if (!is.null(design_matrices[["random"]])) {

@@ -64,7 +64,7 @@ get_neglog_full_unit = function(random_design, proteins_design, fixed_design,
                                 num_proteins, num_rows, random_effects_counts) {
     function(params) {
         sigma = exp(params[1])
-        random_parameters = params[2:(num_random_effects + 1)]
+        random_parameters = exp(params[2:(num_random_effects + 1)])
         proteins = params[(num_random_effects + 2):(num_random_effects + 2 + num_proteins - 1)]
         fixed = params[(num_random_effects + 2 + num_proteins):length(params)]
         random_diagonal = rep(random_parameters, times = random_effects_counts)

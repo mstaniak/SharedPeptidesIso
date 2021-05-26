@@ -29,16 +29,23 @@ get_full_model_information = function(fitted_model, model_design) {
     num_fixed = getIsoNumFixed(model_design)
     num_random = getIsoNumRandom(model_design)
     num_proteins = getIsoNumProteins(model_design)
+    random_names = names(getIsoEffectsCounts(model_design))
+    protein_names = colnames(getIsoProteinDesign(model_design))
+    fixed_names = colnames(getIsoFixedDesign(model_design))
+    coef_names = c("sigma", random_names, protein_names, fixed_names)
 
     if (fitted_model[["convergence"]] == 0) {
         pars = fitted_model[["par"]]
         loglik = -fitted_model[["value"]]
         coef = c(exp(pars[1:(num_random + 1)]), pars[-(1:(num_random + 1))])
         sigma = coef[1]
-        random_effects_var = (sigma ^ 2) * exp(coef[2:(num_random + 1)])
+        names(coef) = coef_names
+        random_effects_var = (sigma ^ 2) * coef[2:(num_random + 1)]
         names(random_effects_var) = names(getIsoEffectsCounts(model_design))
         protein_abundance = coef[(num_random + 2):(num_random + num_proteins + 1)]
+        names(protein_abundance) = protein_names
         fixed_effects = coef[(num_random + num_proteins + 2):length(coef)]
+        names(fixed_effects) = fixed_names
 
         fitted = as.numeric(log(getIsoProteinDesign(model_design) %*% exp(protein_abundance)) +
                                 getIsoFixedDesign(model_design) %*% fixed_effects)

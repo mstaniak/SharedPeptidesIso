@@ -14,8 +14,12 @@ Imports:
     lme4,
     stats,
     numDeriv,
-    data.table
-Suggests: tinytest
+    data.table,
+    ggplot2
+Suggests: 
+    tinytest,
+    knitr,
+    rmarkdown
 RoxygenNote: 7.0.2
 Collate: 
     'IsoAPQModelDesign.R'
@@ -25,3 +29,4 @@ Collate:
     'utils_log_likelihood.R'
     'utils_model_design.R'
     'utils_model_fit.R'
+VignetteBuilder: knitr

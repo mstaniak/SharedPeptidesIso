@@ -1,8 +1,9 @@
 #' Fit a model based on model design
 #' @param model_design object of class IsoAPQModelDesign
 #' @return list
+#' @importFrom stats optim
 #' @keywords internal
-fit_iso_full_model = function(model_design) {
+fit_iso_full_model = function(model_design, ...) {
     grad_m = getIsoAnalyticalGradient(model_design)
     loglik_m = getIsoLogLikelihood(model_design)
     num_random_effects = getIsoNumRandom(model_design)
@@ -12,7 +13,8 @@ fit_iso_full_model = function(model_design) {
                         rep(12, num_proteins),
                         rep(1, num_fixed_effects))
     # TODO: getIsoStartingValues
-    optimized_loglik = optim(starting_values, loglik_m, grad_m, method = "BFGS")
+    optimized_loglik = optim(starting_values, loglik_m, grad_m, method = "BFGS",
+                             ...)
     optimized_loglik
 }
 

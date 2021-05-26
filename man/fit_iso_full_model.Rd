@@ -4,7 +4,7 @@
 \alias{fit_iso_full_model}
 \title{Fit a model based on model design}
 \usage{
-fit_iso_full_model(model_design)
+fit_iso_full_model(model_design, ...)
 }
 \arguments{
 \item{model_design}{object of class IsoAPQModelDesign}

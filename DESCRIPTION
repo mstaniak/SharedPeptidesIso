@@ -13,5 +13,15 @@ Imports:
     tinytest,
     lme4,
     stats,
-    numDeriv
+    numDeriv,
+    data.table
 Suggests: tinytest
+RoxygenNote: 7.0.2
+Collate: 
+    'IsoAPQModelDesign.R'
+    'IsoAPQModel.R'
+    'SharedPeptidesIso.R'
+    'utils_analytical_gradient.R'
+    'utils_log_likelihood.R'
+    'utils_model_design.R'
+    'utils_model_fit.R'

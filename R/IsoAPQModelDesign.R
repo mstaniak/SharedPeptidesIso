@@ -240,8 +240,14 @@ setMethod("getIsoRandomDesign", "IsoAPQModelDesign", function(x) x@random)
 setMethod("getIsoResponse", "IsoAPQModelDesign", function(x) x@response)
 setMethod("getIsoEffectsCounts", "IsoAPQModelDesign", function(x) x@counts)
 setMethod("getIsoIndependentUnit", "IsoAPQModelDesign", function(x) x@independent_unit)
-setMethod("hasIsoFixedEffects", "IsoAPQModelDesign", function(x) !is.null(x@fixed))
-setMethod("hasIsoRandomEffects", "IsoAPQModelDesign", function(x) !is.null(x@random))
+setMethod("hasIsoFixedEffects", "IsoAPQModelDesign", function(x) !is.null(x@fixed) & !(ncol(x@fixed) == 0))
+setMethod("hasIsoRandomEffects", "IsoAPQModelDesign", function(x) {
+    if (is.null(x@random)) {
+        FALSE
+    } else {
+        ncol(x@random) != 0
+    }
+})
 setMethod("getIsoFormula", "IsoAPQModelDesign", function(x) x@formula)
 setMethod("getIsoNumRandom", "IsoAPQModelDesign", function(x) x@num_random_effects)
 setMethod("getIsoNumFixed", "IsoAPQModelDesign", function(x) x@num_fixed_effects)
@@ -258,14 +264,11 @@ setMethod("getIsoAnalyticalGradient", "IsoAPQModelDesign",
               if (hasIsoFixedEffects(x) & hasIsoRandomEffects(x)) {
                   get_iso_full_gradient(x)
               } else if (!hasIsoFixedEffects(x) & hasIsoRandomEffects(x)) {
-                  stop("Not implemented yet")
-                  # get_iso_random_gradient(x)
+                  get_iso_random_gradient(x)
               } else if (hasIsoFixedEffects(x) & !hasIsoRandomEffects(x)) {
-                  stop("Not implemented yet")
-                  # get_iso_fixed_gradient(x)
+                  get_iso_fixed_gradient(x)
               } else {
-                  stop("Not implemented yet")
-                  # get_iso_protein_gradient(x)
+                  get_iso_protein_gradient(x)
               }
           })
 
@@ -274,14 +277,11 @@ setMethod("getIsoLogLikelihood", "IsoAPQModelDesign",
               if (hasIsoFixedEffects(x) & hasIsoRandomEffects(x)) {
                   get_iso_full_loglikelihood(x)
               } else if (!hasIsoFixedEffects(x) & hasIsoRandomEffects(x)) {
-                  stop("Not implemented yet")
-                  # get_iso_random_loglikelihood(x)
+                  get_iso_random_loglikelihood(x)
               } else if (hasIsoFixedEffects(x) & !hasIsoRandomEffects(x)) {
-                  stop("Not implemented yet")
-                  # get_iso_fixed_loglikelihood(x)
+                  get_iso_fixed_loglikelihood(x)
               } else {
-                  stop("Not implemented yet")
-                  # get_iso_protein_loglikelihood(x)
+                  get_iso_protein_loglikelihood(x)
               }
           })
 
@@ -290,11 +290,9 @@ setMethod("fitIsoModel", "IsoAPQModelDesign", function(x, ...) {
     if (hasIsoFixedEffects(x) & hasIsoRandomEffects(x)) {
         fit_iso_full_model(x, ...)
     } else if (!hasIsoFixedEffects(x) & hasIsoRandomEffects(x)) {
-        stop("Not implemented yet")
-        # get_iso_random_loglikelihood(x)
+        fit_iso_random_model(x, ...)
     } else if (hasIsoFixedEffects(x) & !hasIsoRandomEffects(x)) {
-        stop("Not implemented yet")
-        # get_iso_fixed_loglikelihood(x)
+        fit_iso_fixed_model(x, ...)
     } else {
         stop("Not implemented yet")
         # get_iso_protein_loglikelihood(x)

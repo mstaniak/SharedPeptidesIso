@@ -76,14 +76,3 @@ get_neglog_full_unit = function(random_design, proteins_design, fixed_design,
         as.numeric(log(det((sigma ^ 2) * V)) + (1 / (sigma ^ 2)) * t(r) %*% V_inv %*% r)
     }
 }
-
-
-# TODO:
-# get_iso_random_loglikelihood = function(x) {
-# }
-#
-# get_iso_fixed_loglikelihood = function(x) {
-# }
-#
-# get_iso_protein_loglikelihood = function(x) {
-# }

@@ -56,8 +56,19 @@ IsoAPQModel = function(model_formula, model_data, ...) {
     message("Fitting nonlinear mixed effects model, please wait...")
     fitted_model = fitIsoModel(model_design, ...)
     if (inherits(fitted_model, "list")) {
-        model_information = get_full_model_information(fitted_model,
-                                                       model_design)
+        if (hasIsoFixedEffects(model_design) & hasIsoRandomEffects(model_design)) {
+            model_information = get_full_model_information(fitted_model,
+                                                           model_design)
+        } else if (!hasIsoFixedEffects(model_design) & hasIsoRandomEffects(model_design)) {
+            model_information = get_random_model_information(fitted_model,
+                                                             model_design)
+        } else if (hasIsoFixedEffects(model_design) & !hasIsoRandomEffects(model_design)) {
+            model_information = get_fixed_model_information(fitted_model,
+                                                            model_design)
+        } else {
+            stop("Not implemented yet")
+            # get_iso_protein_loglikelihood(x)
+        }
     } else {
         stop("Not implemented yet")
     }

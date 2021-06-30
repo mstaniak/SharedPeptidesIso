@@ -1,21 +1,19 @@
 #' Analytical gradient for the full model
 #' @param model_design object of class IsoAPQModelDesign
 #' @keywords internal
-get_iso_full_gradient = function(model_design) {
+get_iso_random_gradient = function(model_design) {
     response = getIsoResponse(model_design)
     random_effects_counts = getIsoEffectsCounts(model_design)
     num_random_effects = getIsoNumRandom(model_design)
     proteins_design = getIsoProteinDesign(model_design)
     num_proteins = getIsoNumProteins(model_design)
-    fixed_design = getIsoFixedDesign(model_design)
-    num_fixed_effects = getIsoNumFixed(model_design)
     random_design = getIsoRandomDesign(model_design)
     independent_unit = getIsoIndependentUnit(model_design)
 
-    gradient = get_gradient_full(random_design, proteins_design, fixed_design,
-                                 response, num_random_effects, num_fixed_effects,
-                                 num_proteins, random_effects_counts,
-                                 independent_unit)
+    gradient = get_gradient_random(random_design, proteins_design,
+                                   response, num_random_effects,
+                                   num_proteins, random_effects_counts,
+                                   independent_unit)
     gradient
 }
 
@@ -23,39 +21,30 @@ get_iso_full_gradient = function(model_design) {
 #' Nonlinear mixed effects model based on isotopic distribution
 #' @param random_design design matrix for random effects
 #' @param proteins_design design matrix for protein parameters
-#' @param fixed_design design matrix for fixed effects
 #' @param response response vector
 #' @param num_random_effects number of random effects
-#' @param num_fixed_effects number of fixed effects
 #' @param num_proteins number of proteins
 #' @param random_effects_counts counts of groups for each random effect
 #' @param independent_unit vector of values of the independent unit
 #' @return function of a single parameter that returns vector of gradient values
 #' @keywords internal
-get_gradient_full = function(random_design, proteins_design, fixed_design,
-                             response, num_random_effects, num_fixed_effects,
-                             num_proteins, random_effects_counts,
-                             independent_unit) {
+get_gradient_random = function(random_design, proteins_design,
+                               response, num_random_effects,
+                               num_proteins, random_effects_counts,
+                               independent_unit) {
     function(params) {
-        sigma = params[1]
-        random_parameters = params[2:(num_random_effects + 1)]
-        proteins = params[(num_random_effects + 2):(num_random_effects + 2 + num_proteins - 1)]
-        fixed = params[(num_random_effects + 2 + num_proteins):length(params)]
-
         i = 1
         independent_values = unique(independent_unit)
         gradient_values = vector("list", length(independent_values))
         for (scan in independent_values) {
             id = independent_unit == scan
-            gradient = get_gradient_full_unit(random_design[id, , drop = FALSE],
-                                              proteins_design[id, , drop = FALSE],
-                                              fixed_design[id, , drop = FALSE],
-                                              response[id],
-                                              num_random_effects,
-                                              num_fixed_effects,
-                                              num_proteins,
-                                              sum(id),
-                                              random_effects_counts)
+            gradient = get_gradient_random_unit(random_design[id, , drop = FALSE],
+                                                proteins_design[id, , drop = FALSE],
+                                                response[id],
+                                                num_random_effects,
+                                                num_proteins,
+                                                sum(id),
+                                                random_effects_counts)
             gradient_values[[i]] = gradient(params)
             i = i + 1
         }
@@ -71,19 +60,18 @@ get_gradient_full = function(random_design, proteins_design, fixed_design,
 #' @param num_rows number of observations
 #' @return function of a single parameter that returns analytical gradient
 #' @keywords internal
-get_gradient_full_unit = function(random_design, proteins_design, fixed_design,
-                                  response, num_random_effects, num_fixed_effects,
-                                  num_proteins, num_rows, random_effects_counts) {
+get_gradient_random_unit = function(random_design, proteins_design,
+                                    response, num_random_effects,
+                                    num_proteins, num_rows, random_effects_counts) {
     function(params) {
         sigma = exp(params[1])
         random_parameters = exp(params[2:(num_random_effects + 1)])
         proteins = params[(num_random_effects + 2):(num_random_effects + 2 + num_proteins - 1)]
-        fixed = params[(num_random_effects + 2 + num_proteins):length(params)]
         random_diagonal = rep(random_parameters, times = random_effects_counts)
 
         V = diag(1, num_rows) + random_design %*% diag(random_diagonal) %*% t(random_design)
         V_inv = solve(V)
-        r = (response - log(proteins_design %*% exp(proteins)) - fixed_design %*% fixed)
+        r = response - log(proteins_design %*% exp(proteins))
 
 
         # PROTEIN PARAMETERS GRADIENT
@@ -110,20 +98,6 @@ get_gradient_full_unit = function(random_design, proteins_design, fixed_design,
             grad_theta_1 = as.numeric(grad_theta_logdet_1 + grad_theta_main_1)
             grad_theta[i] = grad_theta_1
         }
-        # FIXED GRADIENT
-        fixed_gradient = -2 * (sigma ^ (-2)) * t(fixed_design) %*% V_inv %*% r
-        c(sigma * grad_sigma, random_parameters * grad_theta,
-          grad_prot, fixed_gradient)
+        c(sigma * grad_sigma, random_parameters * grad_theta, grad_prot)
     }
 }
-
-
-# TODO:
-# get_iso_random_gradient = function(x) {
-# }
-#
-# get_iso_fixed_loglikelihood = function(x) {
-# }
-#
-# get_iso_protein_loglikelihood = function(x) {
-# }

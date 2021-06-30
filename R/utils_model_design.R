@@ -60,7 +60,7 @@ get_design_matrices = function(candidate_formula, has_random,
 #' @keywords internal
 get_full_design = function(candidate_formula, model_data) {
     lmer_model = lme4::lmer(candidate_formula, data = model_data)
-    fixed_design = lme4::getME(lmer_model, "X")
+    fixed_design = lme4::getME(lmer_model, "X")[, -1]
     random_design = lme4::getME(lmer_model, "Z")
     list(fixed = fixed_design,
          random = as.matrix(random_design))
@@ -79,7 +79,7 @@ get_empty_design = function(model_data) {
 #' @inheritParams get_design_matrices
 #' @keywords internal
 get_fixed_design = function(candidate_formula, model_data) {
-    fixed_design = model.matrix(candidate_formula, data = model_dat)
+    fixed_design = model.matrix(candidate_formula, data = model_data)
     list(fixed = fixed_design,
          random = NULL)
 }
@@ -114,7 +114,7 @@ get_protein_matrix = function(model_data) {
     protein_cols = setdiff(colnames(model_data),
                            c("intensity", "y", "isoDistr", "iso_prob",
                              "precursor_scan", "charge_in_scan", "charge",
-                             "rep", "sequence", "iso_id"))
+                             "rep", "sequence", "iso_id", "sequence_in_rep"))
     protein_formula = paste("intensity ~ 0 +",
                             paste(protein_cols, collapse = " + "))
     model.matrix(as.formula(protein_formula), data = model_data)
@@ -159,7 +159,11 @@ add_independent_unit = function(design_matrices, model_data) {
     if (is.null(design_matrices[["random"]])) {
         unit = character(0)
     } else {
-        unit = as.character(model_data[["precursor_scan"]])
+        random_effects_names = names(design_matrices[["counts"]])
+        counts = sapply(model_data[, random_effects_names, with = FALSE],
+                        data.table::uniqueN)
+        independent_unit = random_effects_names[which.min(counts)]
+        unit = as.character(model_data[[independent_unit]])
     }
     design_matrices[["independent_unit"]] = unit
     design_matrices

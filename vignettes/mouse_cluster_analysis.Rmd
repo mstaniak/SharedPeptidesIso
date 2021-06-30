@@ -62,3 +62,17 @@ model_lin = lme4::lmer(
 fixed_coefs = lme4::fixef(model_lin)
 fixed_coefs[1:3]
 ```
+
+
+```{r }
+model_random_d = IsoAPQModelDesign(
+  log(intensity/isoDistr) ~ log(..) + (1|precursor_scan) + (1|charge_in_scan),
+  model_data = mouse_cluster
+)
+hasIsoFixedEffects(model_random_d)
+# model_random = IsoAPQModel(
+#   log(intensity/isoDistr) ~ log(..) + (1|precursor_scan) + (1|charge_in_scan),
+#   model_data = mouse_cluster
+# )
+
+```

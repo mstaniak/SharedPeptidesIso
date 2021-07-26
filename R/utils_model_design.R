@@ -19,9 +19,9 @@ parse_formula = function(model_formula, model_data) {
 #' @keywords internal
 get_candidate_formula = function(formula_chr) {
     if (grepl("log", formula_chr[3])) {
-        formula_chr[3] = gsub("log(..)", "0", formula_chr[3], fixed = TRUE)
+        formula_chr[3] = gsub("log(..)", "1", formula_chr[3], fixed = TRUE)
     } else {
-        formula_chr[3] = gsub("..", "0", formula_chr[3], fixed = TRUE)
+        formula_chr[3] = gsub("..", "1", formula_chr[3], fixed = TRUE)
     }
     formula_chr = paste(formula_chr[c(2, 1, 3)], collapse = " ")
     as.formula(formula_chr)
@@ -60,7 +60,7 @@ get_design_matrices = function(candidate_formula, has_random,
 #' @keywords internal
 get_full_design = function(candidate_formula, model_data) {
     lmer_model = lme4::lmer(candidate_formula, data = model_data)
-    fixed_design = lme4::getME(lmer_model, "X")[, -1]
+    fixed_design = lme4::getME(lmer_model, "X")
     random_design = lme4::getME(lmer_model, "Z")
     list(fixed = fixed_design,
          random = as.matrix(random_design))

@@ -295,6 +295,5 @@ setMethod("fitIsoModel", "IsoAPQModelDesign", function(x, ...) {
         fit_iso_fixed_model(x, ...)
     } else {
         stop("Not implemented yet")
-        # get_iso_protein_loglikelihood(x)
     }
 })

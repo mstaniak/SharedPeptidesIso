@@ -7,7 +7,8 @@ parse_formula = function(model_formula, model_data) {
     formula_chr = as.character(model_formula)
     has_random = any(grepl("|", model_formula, fixed = TRUE))
     has_fixed = !all(grepl("|", setdiff(attr(terms(model_formula),
-                                             "term.labels"), ".."), fixed = TRUE))
+                                             "term.labels"), c("..", "log(..)")), fixed = TRUE))
+    has_fixed = has_fixed | attr(terms(model_formula), "intercept") == 1
     candidate_formula = get_candidate_formula(formula_chr)
     design_matrices = get_design_matrices(candidate_formula, has_random, has_fixed, model_data)
     design_matrices
@@ -19,9 +20,23 @@ parse_formula = function(model_formula, model_data) {
 #' @keywords internal
 get_candidate_formula = function(formula_chr) {
     if (grepl("log", formula_chr[3])) {
-        formula_chr[3] = gsub("log(..)", "1", formula_chr[3], fixed = TRUE)
+        formula_chr[3] = gsub("+ log(..) ", "", formula_chr[3], fixed = TRUE)
+        if (grepl("log", formula_chr[3])) {
+            if (!grepl("-1", formula_chr[3]) | grepl("0", formula_chr[3])) {
+                formula_chr[3] = gsub("log(..)", "1", formula_chr[3], fixed = TRUE)
+            } else {
+                formula_chr[3] = gsub("log(..)", "", formula_chr[3], fixed = TRUE)
+            }
+        }
     } else {
-        formula_chr[3] = gsub("..", "1", formula_chr[3], fixed = TRUE)
+        formula_chr[3] = gsub("+ .. ", "", formula_chr[3], fixed = TRUE)
+        if (grepl("..", formula_chr[3])) {
+            if (!grepl("-1", formula_chr[3]) | grepl("0", formula_chr[3])) {
+                formula_chr[3] = gsub("..", "1", formula_chr[3], fixed = TRUE)
+            } else {
+                formula_chr[3] = gsub("..", "", formula_chr[3], fixed = TRUE)
+            }
+        }
     }
     formula_chr = paste(formula_chr[c(2, 1, 3)], collapse = " ")
     as.formula(formula_chr)
@@ -115,7 +130,7 @@ get_protein_matrix = function(model_data) {
                            c("intensity", "y", "isoDistr", "iso_prob",
                              "precursor_scan", "charge_in_scan", "charge",
                              "rep", "sequence", "iso_id", "sequence_in_rep"))
-    protein_formula = paste("intensity ~ 0 +",
+    protein_formula = paste("intensity ~ -1 +",
                             paste(protein_cols, collapse = " + "))
     model.matrix(as.formula(protein_formula), data = model_data)
 }

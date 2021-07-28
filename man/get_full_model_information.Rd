@@ -5,6 +5,8 @@
 \title{Extract model information from optim() output and model design}
 \usage{
 get_full_model_information(fitted_model, model_design)
+
+get_full_model_information(fitted_model, model_design)
 }
 \arguments{
 \item{fitted_model}{output of optim()}
@@ -13,8 +15,12 @@ get_full_model_information(fitted_model, model_design)
 }
 \value{
 list
+
+list
 }
 \description{
+Extract model information from optim() output and model design
+
 Extract model information from optim() output and model design
 }
 \keyword{internal}

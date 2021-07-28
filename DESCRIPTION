@@ -20,7 +20,7 @@ Suggests:
     tinytest,
     knitr,
     rmarkdown
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.1
 Collate: 
     'IsoAPQModelDesign.R'
     'IsoAPQModel.R'

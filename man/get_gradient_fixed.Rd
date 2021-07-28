@@ -5,27 +5,19 @@
 \title{Nonlinear mixed effects model based on isotopic distribution}
 \usage{
 get_gradient_fixed(
-  random_design,
   proteins_design,
   fixed_design,
   response,
-  num_random_effects,
   num_fixed_effects,
-  num_proteins,
-  random_effects_counts,
-  independent_unit
+  num_proteins
 )
 }
 \arguments{
-\item{random_design}{design matrix for random effects}
-
 \item{proteins_design}{design matrix for protein parameters}
 
 \item{fixed_design}{design matrix for fixed effects}
 
 \item{response}{response vector}
-
-\item{num_random_effects}{number of random effects}
 
 \item{num_fixed_effects}{number of fixed effects}
 

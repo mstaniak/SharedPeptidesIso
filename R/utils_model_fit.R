@@ -43,6 +43,9 @@ get_full_model_information = function(fitted_model, model_design) {
         random_effects_var = (sigma ^ 2) * coef[2:(num_random + 1)]
         names(random_effects_var) = names(getIsoEffectsCounts(model_design))
         protein_abundance = coef[(num_random + 2):(num_random + num_proteins + 1)]
+        if (any(grepl("Intercept", coef_names))) {
+            protein_abundance = protein_abundance + coef[grepl("Intercept", coef_names)]
+        }
         names(protein_abundance) = protein_names
         fixed_effects = coef[(num_random + num_proteins + 2):length(coef)]
         names(fixed_effects) = fixed_names
@@ -117,6 +120,9 @@ get_random_model_information = function(fitted_model, model_design) {
         random_effects_var = (sigma ^ 2) * coef[2:(num_random + 1)]
         names(random_effects_var) = names(getIsoEffectsCounts(model_design))
         protein_abundance = coef[(num_random + 2):(num_random + num_proteins + 1)]
+        if (any(grepl("Intercept", coef_names))) {
+            protein_abundance = protein_abundance + coef[grepl("Intercept", coef_names)]
+        }
         names(protein_abundance) = protein_names
 
         fitted = as.numeric(log(getIsoProteinDesign(model_design) %*% exp(protein_abundance)))
@@ -192,6 +198,9 @@ get_full_model_information = function(fitted_model, model_design) {
         random_effects_var = (sigma ^ 2) * coef[2:(num_random + 1)]
         names(random_effects_var) = names(getIsoEffectsCounts(model_design))
         protein_abundance = coef[(num_random + 2):(num_random + num_proteins + 1)]
+        if (any(grepl("Intercept", coef_names))) {
+            protein_abundance = protein_abundance + coef[grepl("Intercept", coef_names)]
+        }
         names(protein_abundance) = protein_names
         fixed_effects = coef[(num_random + num_proteins + 2):length(coef)]
         names(fixed_effects) = fixed_names

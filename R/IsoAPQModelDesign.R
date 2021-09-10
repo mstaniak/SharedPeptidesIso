@@ -219,6 +219,11 @@ IsoAPQModelDesign = function(model_formula, model_design_list = NULL,
     if (is.null(model_design_list)) {
         model_design_list = parse_formula(model_formula, model_data)
     }
+    if (is.null(model_design_list[["fixed"]])) {
+        num_fixed = 0L
+    } else {
+        num_fixed = ncol(model_design_list[["fixed"]])
+    }
     new("IsoAPQModelDesign",
         protein = model_design_list[["protein"]],
         fixed = model_design_list[["fixed"]],
@@ -229,7 +234,7 @@ IsoAPQModelDesign = function(model_formula, model_design_list = NULL,
         independent_unit = model_design_list[["independent_unit"]],
         num_proteins = ncol(model_design_list[["protein"]]),
         num_random_effects = length(model_design_list[["counts"]]),
-        num_fixed_effects = ncol(model_design_list[["fixed"]]),
+        num_fixed_effects = num_fixed,
         num_observations = nrow(model_design_list[["protein"]]))
 }
 
@@ -240,7 +245,13 @@ setMethod("getIsoRandomDesign", "IsoAPQModelDesign", function(x) x@random)
 setMethod("getIsoResponse", "IsoAPQModelDesign", function(x) x@response)
 setMethod("getIsoEffectsCounts", "IsoAPQModelDesign", function(x) x@counts)
 setMethod("getIsoIndependentUnit", "IsoAPQModelDesign", function(x) x@independent_unit)
-setMethod("hasIsoFixedEffects", "IsoAPQModelDesign", function(x) !is.null(x@fixed) & !(ncol(x@fixed) == 0))
+setMethod("hasIsoFixedEffects", "IsoAPQModelDesign", function(x) {
+    if (is.null(x@fixed)) {
+        FALSE
+    } else {
+        ncol(x@fixed) != 0
+    }
+})
 setMethod("hasIsoRandomEffects", "IsoAPQModelDesign", function(x) {
     if (is.null(x@random)) {
         FALSE
